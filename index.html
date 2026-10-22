@@ -626,10 +626,16 @@ function refreshWeeks(){
   });
 }
 function syncSelects(){
-  const mid=new Date(cur); mid.setDate(mid.getDate()+3); // 週の中央で年月判定
-  let y=mid.getFullYear(), m=mid.getMonth()+1;
-  if(!(y in YEARS)) { y=2026; m=7; }
-  if(YEARS[y].indexOf(m)<0) m=YEARS[y][0];
+  // 選択中の年月に今の週が掛かっていればその選択を維持（月初週の月曜が前月/前年に落ちて弾かれるのを防ぐ）
+  const wkS=new Date(cur), wkE=new Date(cur); wkE.setDate(wkE.getDate()+6);
+  let y=+sy.value, m=+sm.value;
+  const keep=(y in YEARS)&&YEARS[y].indexOf(m)>=0&&(new Date(y,m-1,1)<=wkE)&&(new Date(y,m,0)>=wkS);
+  if(!keep){
+    const mid=new Date(cur); mid.setDate(mid.getDate()+3); // 週の中央で年月判定
+    y=mid.getFullYear(); m=mid.getMonth()+1;
+    if(!(y in YEARS)) { y=2026; m=7; }
+    if(YEARS[y].indexOf(m)<0) m=YEARS[y][0];
+  }
   sy.value=String(y); buildMonths(); sm.value=String(m);
   refreshWeeks(); sw.value=iso(cur);
   if(sw.selectedIndex<0) sw.selectedIndex=0;
